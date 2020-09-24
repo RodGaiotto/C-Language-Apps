@@ -1,0 +1,267 @@
+QUEENS + PERFORMANCE TEST
+
+
+Desafio das Rainhas.
+
+4 Rainhas em um tabuleiro de 16 casas (matrix de 4 x 4). Posicionar a rainha de modo que nenhuma ameaça a outra.
+Lembrando que a rainha anda para todos os lados sem limite de casas.
+
+
+ERRO INICIAL AO COMPILAR:
+
+
+queens.c: In function ‘printSolution’:
+queens.c:10:5: error: ‘for’ loop initial declarations are only allowed in C99 mode
+     for (int i = 0; i < N; i++) { 
+     ^
+queens.c:10:5: note: use option -std=c99 or -std=gnu99 to compile your code
+queens.c:11:9: error: ‘for’ loop initial declarations are only allowed in C99 mode
+         for (int j = 0; j < N; j++) 
+         ^
+
+Stackoverflow:
+
+This happens because declaring variables inside a for loop wasn't valid C until C99(which is the standard of C published in 1999), you can either declare your counter outside the for as pointed out by others or use the -std=c99 flag to tell the compiler explicitly that you're using this standard and it should interpret it as such.
+
+
+A solução foi bastante simples, declarar a variavel fora do FOR:
+
+for (int i = 0; i < N; i++) { 
+
+Correção:
+
+int i;
+for (i = 0; i < N; i++) { 
+
+
+===============================================================================
+
+CÓDIGO:
+
+
+/* C/C++ program to solve N Queen Problem using 
+backtracking */
+//here we can change the table size
+#define N 16 
+#include <stdbool.h> 
+#include <stdio.h> 
+
+/* A utility function to print solution */
+void printSolution(int board[N][N]) 
+{ 
+	int i;
+	for (i = 0; i < N; i++) {
+		int j; 
+		for (j = 0; j < N; j++) 
+			printf(" %d ", board[i][j]); 
+		printf("\n"); 
+	} 
+} 
+
+/* A utility function to check if a queen can 
+be placed on board[row][col]. Note that this 
+function is called when "col" queens are 
+already placed in columns from 0 to col -1. 
+So we need to check only left side for 
+attacking queens */
+bool isSafe(int board[N][N], int row, int col) 
+{ 
+	int i, j; 
+
+	/* Check this row on left side */
+	for (i = 0; i < col; i++) 
+		if (board[row][i]) 
+			return false; 
+
+	/* Check upper diagonal on left side */
+	for (i = row, j = col; i >= 0 && j >= 0; i--, j--) 
+		if (board[i][j]) 
+			return false; 
+
+	/* Check lower diagonal on left side */
+	for (i = row, j = col; j >= 0 && i < N; i++, j--) 
+		if (board[i][j]) 
+			return false; 
+
+	return true; 
+} 
+
+/* A recursive utility function to solve N 
+Queen problem */
+bool solveNQUtil(int board[N][N], int col) 
+{ 
+	/* base case: If all queens are placed 
+	then return true */
+	if (col >= N) 
+		return true; 
+
+	/* Consider this column and try placing 
+	this queen in all rows one by one */
+
+	int i;
+	for (i = 0; i < N; i++) { 
+		/* Check if the queen can be placed on 
+		board[i][col] */
+		if (isSafe(board, i, col)) { 
+			/* Place this queen in board[i][col] */
+			board[i][col] = 1; 
+
+			/* recur to place rest of the queens */
+			if (solveNQUtil(board, col + 1)) 
+				return true; 
+
+			/* If placing queen in board[i][col] 
+			doesn't lead to a solution, then 
+			remove queen from board[i][col] */
+			board[i][col] = 0; // BACKTRACK 
+		} 
+	} 
+
+	/* If the queen cannot be placed in any row in 
+		this colum col then return false */
+	return false; 
+} 
+
+/* This function solves the N Queen problem using 
+Backtracking. It mainly uses solveNQUtil() to 
+solve the problem. It returns false if queens 
+cannot be placed, otherwise, return true and 
+prints placement of queens in the form of 1s. 
+Please note that there may be more than one 
+solutions, this function prints one of the 
+feasible solutions.*/
+bool solveNQ() 
+{ 
+	int board[N][N] = { { 0, 0, 0, 0 }, 
+			    { 0, 0, 0, 0 }, 
+			    { 0, 0, 0, 0 }, 
+			    { 0, 0, 0, 0 } }; 
+
+	if (solveNQUtil(board, 0) == false) { 
+		printf("Solution does not exist"); 
+		return false; 
+	} 
+
+	printSolution(board); 
+	return true; 
+} 
+
+// driver program to test above function 
+int main() 
+{ 
+	solveNQ(); 
+	return 0; 
+}
+
+
+===================================
+
+COMPILANDO E RODANDO:
+
+[rgaiotto@oc5255651151 ~]$ vi queens.c
+[rgaiotto@oc5255651151 ~]$ gcc -o queens queens.c
+[rgaiotto@oc5255651151 ~]$ ./queens 
+ 0  0  1  0 
+ 1  0  0  0 
+ 0  0  0  1 
+ 0  1  0  0 
+[rgaiotto@oc5255651151 ~]$
+
+
+------------------------------------------------------
+
+
+TESTE EXECUTADO EM SERVER EM UMA Z14:
+
+zlinuxgpfs1:~ # cat /proc/cpuinfo 
+vendor_id       : IBM/S390
+# processors    : 2
+bogomips per cpu: 21881.00
+max thread id   : 0
+features	: esan3 zarch stfle msa ldisp eimm dfp edat etf3eh highgprs te vx vxd vxe gs sie 
+facilities      : 0 1 2 3 4 6 7 8 9 10 12 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 30 31 32 33 34 35 36 37 38 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 57 58 59 60 73 74 75 76 77 80 81 82 128 129 130 131 133 134 135 146 147 168
+cache0          : level=1 type=Data scope=Private size=128K line_size=256 associativity=8
+cache1          : level=1 type=Instruction scope=Private size=128K line_size=256 associativity=8
+cache2          : level=2 type=Data scope=Private size=4096K line_size=256 associativity=8
+cache3          : level=2 type=Instruction scope=Private size=2048K line_size=256 associativity=8
+cache4          : level=3 type=Unified scope=Shared size=131072K line_size=256 associativity=32
+cache5          : level=4 type=Unified scope=Shared size=688128K line_size=256 associativity=42
+processor 0: version = FF,  identification = 117D27,  machine = 3906
+processor 1: version = FF,  identification = 117D27,  machine = 3906
+
+cpu number      : 0
+cpu MHz dynamic : 5208
+cpu MHz static  : 5208
+
+cpu number      : 1
+cpu MHz dynamic : 5208
+cpu MHz static  : 5208
+zlinuxgpfs1:~ # free -m
+             total       used       free     shared    buffers     cached
+Mem:          4004       2669       1334          4        209       1655
+-/+ buffers/cache:        805       3198
+Swap:          507          2        505
+zlinuxgpfs1:~ # vmcp q userid
+LNXAR004 AT LNXVM55
+zlinuxgpfs1:~ # time ./queens 
+ 1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 
+ 0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0 
+ 0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0 
+ 0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0 
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0 
+ 0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0 
+ 0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0 
+ 0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0 
+
+real	0m0.007s
+user	0m0.006s
+sys	0m0.001s
+zlinuxgpfs1:~ #
+
+---------------------------------------------
+
+TESTE EXECUTADO EM POWER8
+
+
+[rodhash@b02rhe07node02 ~]$ uname -r
+3.10.0-1062.1.2.el7.ppc64le
+[rodhash@b02rhe07node02 ~]$ free -m
+              total        used        free      shared  buff/cache   available
+Mem:           7639        2019         877         392        4742        4509
+Swap:          5119          48        5071
+[rodhash@b02rhe07node02 ~]$ grep -ci "^processor" /proc/cpuinfo
+16
+[rodhash@b02rhe07node02 ~]$ chmod +x gaiotto.c 
+[rodhash@b02rhe07node02 ~]$ which gcc
+/usr/bin/gcc
+[rodhash@b02rhe07node02 ~]$ gcc -o queens gaiotto.c
+[rodhash@b02rhe07node02 ~]$ time ./queens
+ 1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 
+ 0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0 
+ 0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0 
+ 0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0 
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0 
+ 0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1 
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0 
+ 0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0 
+ 0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0 
+real    0m0.014s
+user    0m0.007s
+sys     0m0.007s
+[rodhash@b02rhe07node02 ~]$ less /proc/cpuinfo 
+[rodhash@b02rhe07node02 ~]$
